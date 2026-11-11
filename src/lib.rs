@@ -2,8 +2,8 @@
 use std::io::Read;
 
 use image::{
-    imageops::{self, FilterType},
     ImageBuffer, Rgba,
+    imageops::{self, FilterType},
 };
 use model::Classification;
 use tract_onnx::prelude::*;
@@ -16,7 +16,7 @@ pub mod model;
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 
 /// The model used for classifying images.
-pub type Model = SimplePlan<TypedFact, Box<dyn TypedOp>, Graph<TypedFact, Box<dyn TypedOp>>>;
+pub type Model = std::sync::Arc<TypedSimplePlan>;
 
 pub(crate) static SIZE: usize = 224;
 pub(crate) static SIZE_U32: u32 = 224;
@@ -30,8 +30,8 @@ pub(crate) static MODEL_BYTES: &[u8] =
 ///
 /// Note: This is a lazy static, so it will only be initialized the first time it is used.
 #[cfg(test)]
-pub(crate) static MODEL: once_cell::sync::Lazy<Model> =
-    once_cell::sync::Lazy::new(|| create_model(MODEL_BYTES).unwrap());
+pub(crate) static MODEL: std::sync::LazyLock<Model> =
+    std::sync::LazyLock::new(|| create_model(MODEL_BYTES).unwrap());
 
 /// Creates the model used for classifying images.
 /// ```rust,ignore
@@ -69,7 +69,7 @@ pub fn examine(
     .into();
 
     let result = model.run(tvec!(image.into()))?;
-    let data = result[0].to_array_view::<f32>()?;
+    let data = result[0].to_plain_array_view::<f32>()?;
 
     Ok(data
         .into_iter()
@@ -87,7 +87,7 @@ pub fn examine(
 mod test {
     use std::fs::File;
 
-    use super::{examine, Result};
+    use super::{Result, examine};
     use crate::MODEL;
 
     fn test_static(path: &'static str) -> Result<()> {

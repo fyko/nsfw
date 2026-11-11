@@ -17,15 +17,11 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
 
 jobs:
-  create_model:
-    uses: ./.github/workflows/create_model.yml
-    secrets: inherit
   suite:
     name: Suite
-    needs: [create_model]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup problem matchers
         uses: r7kamura/rust-problem-matchers@v1
@@ -40,10 +36,10 @@ jobs:
         with:
           tool: cargo-make,cargo-nextest
 
-      - name: Download model artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: model
+      - name: Download model
+        run: gh release download v0.2.0 -R ${{ github.repository }} -p model.onnx
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       - name: Run Rustfmt
         run: cargo make format-ci
@@ -53,6 +49,9 @@ jobs:
 
       - name: Run tests
         run: cargo make test
+
+      - name: Run doctests
+        run: cargo test --doc --all-features
 
       - name: Build release
         run: cargo build --release --all-features

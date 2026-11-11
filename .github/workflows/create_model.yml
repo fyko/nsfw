@@ -1,13 +1,17 @@
 name: Create Model
 
 on:
-  workflow_call:
+  workflow_dispatch:
 
 jobs:
   create_model:
     name: Create Model
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+
       - name: Install dependencies
         run: |
           pip3 install tensorflow tf2onnx onnx==1.14.1
@@ -24,7 +28,7 @@ jobs:
         run: python3 -m tf2onnx.convert --saved-model ./model --output ./model.onnx --opset 16
 
       - name: Upload model as artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: model
           path: model.onnx
