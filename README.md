@@ -57,8 +57,6 @@ nsfw = { version = "0.3", default-features = false, features = ["gif"] }
 ```
 
 ```rust,no_run
-# #[cfg(feature = "gif")]
-# {
 use std::{fs::File, io::BufReader};
 
 use image::codecs::gif::GifDecoder;
@@ -76,7 +74,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
-# }
 ```
 
 ## Feature Flags
