@@ -1,8 +1,8 @@
 use std::io::{BufRead, Seek};
 
-use image::{codecs::gif::GifDecoder, AnimationDecoder};
+use image::{AnimationDecoder, codecs::gif::GifDecoder};
 
-use crate::{examine, model::Classification, Model, Result};
+use crate::{Model, Result, examine, model::Classification};
 
 /// An iterator that examines every frame of a GIF.
 ///

@@ -17,13 +17,13 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     steps:
-      - name: Download model artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: model
+      - name: Download model
+        run: gh release download v0.2.0 -R ${{ github.repository }} -p model.onnx
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       - name: Upload release asset
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v3
         with:
           files: model.onnx
           body: |
@@ -37,7 +37,7 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - run: rustup toolchain install stable --profile minimal
 

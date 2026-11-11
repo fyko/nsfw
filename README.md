@@ -17,10 +17,10 @@ You will need to download it from [the release page] or download the model yours
 
 ```sh
 $ gh release download -R Fyko/nsfw --pattern "model.onnx"
-# or naviate to the release page and download it manually
+# or navigate to the release page and download it manually
 ```
 
-### Convering from [GantMan's model]
+### Converting from [GantMan's model]
 
 See our [GitHub Workflow]
 
@@ -28,23 +28,23 @@ See our [GitHub Workflow]
 
 ```toml
 [dependencies]
-image = { version = "0.24.7", default-features = false, features = ["jpeg"] }
-nsfw = { version = "0.1.0", default-features = false, features = ["jpeg"] }
+image = { version = "0.25", default-features = false, features = ["jpeg"] }
+nsfw = { version = "0.3", default-features = false, features = ["jpeg"] }
 ```
 
-```rust,no_test
+```rust,no_run
+use std::fs::File;
+
 use nsfw::{create_model, examine};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-	let model = create_model(
-		include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"), "/model.onnx"))
-	);
+    let model = create_model(File::open("model.onnx")?)?;
 
-	let image = image::open(concat!(env!("CARGO_MANIFEST_DIR"), "/might_be_porn.jpg"))?;
-	let result = examine(&model, &image)?;
-	println!("{:#?}", result);
+    let image = image::open("might_be_porn.jpg")?.to_rgba8();
+    let result = examine(&model, &image)?;
+    println!("{result:#?}");
 
-	Ok(())
+    Ok(())
 }
 ```
 
@@ -52,33 +52,33 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ```toml
 [dependencies]
-image = { version = "0.24.7", default-features = false, features = ["gif"] }
-nsfw = { version = "0.1.0", default-features = false, features = ["gif"] }
+image = { version = "0.25", default-features = false, features = ["gif"] }
+nsfw = { version = "0.3", default-features = false, features = ["gif"] }
 ```
 
-```rust,no_test
-use nsfw::{examine, MODEL, GifParser};
+```rust,no_run
+use std::{fs::File, io::BufReader};
+
+use image::codecs::gif::GifDecoder;
+use nsfw::{create_model, gif::GifParser};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-	let model = create_model(
-		include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"), "/model.onnx"))
-	);
+    let model = create_model(File::open("model.onnx")?)?;
 
-	let path = concat!(env!("CARGO_MANIFEST_DIR"), "/might_be_porn.gif");
-	let file = BufReader::new(File::open(gif_path)?);
-	let frames = GifParser::new(GifDecoder::new(file)?, &model);
+    let file = BufReader::new(File::open("might_be_porn.gif")?);
+    let frames = GifParser::new(GifDecoder::new(file)?, &model);
 
-	for frame in frames {
-		println!("{frame:#?}")
-	}
+    for frame in frames {
+        println!("{frame:#?}");
+    }
 
-	Ok(())
+    Ok(())
 }
 ```
 
 ## Feature Flags
 
-- `default` - `jpeg` and `png`
+- `default` - `jpeg`, `png`, and `gif`
 - `serde` - Enables serialization and deserialization of the model using [`serde`].
 - `gif` - Enables GIF support for [`image`].
 - `jpeg` - Enables JPEG support for [`image`].
