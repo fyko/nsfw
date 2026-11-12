@@ -8,13 +8,8 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  test:
-    uses: ./.github/workflows/test.yml
-    secrets: inherit
-
   release_model:
     name: Add model to release
-    needs: test
     runs-on: ubuntu-latest
     steps:
       - name: Download model
@@ -34,7 +29,6 @@ jobs:
 
   publish:
     name: Publish to crates.io
-    needs: test
     runs-on: ubuntu-latest
     permissions:
       contents: read
